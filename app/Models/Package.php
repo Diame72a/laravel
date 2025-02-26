@@ -2,16 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\Model;
 
 class Package extends Model
 {
     use HasFactory;
 
-    public function reservations()
-    {
-        return $this->hasMany(Reservation::class, 'package_id');
-    }
+    protected $fillable = ['name', 'description', 'price', 'duration_hours'];
 }
