@@ -23,6 +23,7 @@ class ReservationController extends Controller
         $machines = Machine::all();
         $packages = Package::all();
         return view('reservations.create', compact('machines', 'packages'));
+
     }
 
     public function store(Request $request)
@@ -102,5 +103,42 @@ class ReservationController extends Controller
 
         $reservation->delete();
         return redirect()->route('reservations.index')->with('success', 'Réservation supprimée avec succès.');
+    }
+
+    public function showPackages()
+    {
+        $packages = Package::all();
+        $machines = Machine::all();
+        return view('reserver', compact('packages', 'machines'));
+    }
+
+    public function reservePackage(Request $request)
+    {
+        // Validation des champs
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'package_id' => 'required|exists:packages,id',
+            'machine_id' => 'required|exists:machines,id',
+            'start_time' => 'required|date|after:now',
+        ]);
+
+        // Récupérer le package pour obtenir la durée
+        $package = Package::find($request->package_id);
+        $start_time = Carbon::parse($request->start_time);
+        $end_time = $start_time->copy()->addHours($package->duration_hours);
+
+        // Créer la réservation
+        Reservation::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'package_id' => $request->package_id,
+            'machine_id' => $request->machine_id,
+            'user_id' => Auth::id(), // Associer la réservation à l'utilisateur connecté
+            'start_time' => $start_time,
+            'end_time' => $end_time,
+        ]);
+
+        return redirect('/')->with('success', 'Votre réservation a été effectuée avec succès!');
     }
 }
